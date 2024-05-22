@@ -66,33 +66,32 @@ end
 --================================================================================================
 QBCore.Functions.CreateCallback('statsBundle:GetLevel', function(source, cb)
     local PlayerId = QBCore.Functions.GetPlayer(source).PlayerData.citizenid
-    local xpL = getXp(PlayerId)
-    local attempts = 0
 
-    while xpL == nil and attempts < 5 do
-        Citizen.Wait(1000)
-        xpL = getXp(PlayerId)
-        attempts = attempts + 1
-    end
-
-    if xpL ~= nil then
-        local levelL, progressL = calculateLevelAndProgress(xpL)
-        local readyCB = {xp = xpL, level = levelL, progress = progressL}
-        cb(readyCB)
-    else
-        QBCore.Functions.Notify("No se pudo obtener el nivel", "error")
-    end
-end)
-
-function getXp(PlayerId, cb)
     MySQL.Async.fetchAll(
         'SELECT char_xp FROM players WHERE citizenid = @citizenid',
         {['@citizenid'] = PlayerId},
         function(result)
-            if result[1] ~= nil then
-                cb(result[1].char_xp)
+            if result[1] then
+                local xpL = result[1].char_xp
+                local levelL, progressL = calculateLevelAndProgress(xpL)
+                local readyCB = {xp = xpL, level = levelL, progress = progressL}
+                cb(readyCB)
             else
-                cb(nil)
+                cb(0)
+            end
+        end
+    )
+end)
+
+function getXp(PlayerId)
+    MySQL.Async.fetchAll(
+        'SELECT * FROM players WHERE citizenid = @PlayerId',
+        {['@PlayerId'] = PlayerId},
+        function(result)
+            if result[1] ~= nil then
+                return (result[1].char_xp)
+            else
+                return (nil)
             end
         end
     )
