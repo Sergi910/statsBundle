@@ -2,7 +2,7 @@ local QBCore = exports['qb-core']:GetCoreObject()
 
 local tokenList = {}
 
-function generateToken()
+function GenerateToken()
     local token = ""
     for i = 1, 16 do
         local rand = math.random(1, 3)
